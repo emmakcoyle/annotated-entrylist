@@ -37,7 +37,7 @@ var EntryList_default = (() => {
     entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
     if (limit) entries = entries.slice(0, limit);
     if (entries.length === 0) return null;
-    return /* @__PURE__ */ u2("div", { children: entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
+    return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
       /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
       /* @__PURE__ */ u2("div", { children: [
         /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),

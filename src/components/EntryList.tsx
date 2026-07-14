@@ -18,7 +18,7 @@ export default (() => {
     if (entries.length === 0) return null
 
     return (
-      <div>
+      <div class="entry-list-block">
         {entries.map((e, i) => (
           <div class="entry" key={i}>
             <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
