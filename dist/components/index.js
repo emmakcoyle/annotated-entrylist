@@ -31,10 +31,17 @@ var EntryList_default = (() => {
     if (slug === "sources") type = "source";
     else if (slug === "ideas") type = "idea";
     else if (slug === "publications") type = "publication";
+    else if (slug === "bibliography") type = "source";
     else if (slug === "index") limit = 5;
     else return null;
     let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug === "index" && f3.frontmatter?.type);
-    entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
+    if (slug === "bibliography") {
+      entries.sort(
+        (a2, b) => String(a2.frontmatter?.title ?? "").localeCompare(String(b.frontmatter?.title ?? ""))
+      );
+    } else {
+      entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
+    }
     if (limit) entries = entries.slice(0, limit);
     if (entries.length === 0) return null;
     return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [

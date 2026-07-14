@@ -9,11 +9,22 @@ export default (() => {
     if (slug === "sources") type = "source"
     else if (slug === "ideas") type = "idea"
     else if (slug === "publications") type = "publication"
+    else if (slug === "bibliography") type = "source"
     else if (slug === "index") limit = 5
     else return null
 
     let entries = allFiles.filter((f) => f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type))
-    entries.sort((a, b) => (b.dates?.modified?.getTime() ?? 0) - (a.dates?.modified?.getTime() ?? 0))
+
+    // bibliography sorts alphabetically by title; everything else stays
+    // sorted by most-recently-modified
+    if (slug === "bibliography") {
+      entries.sort((a, b) =>
+        String(a.frontmatter?.title ?? "").localeCompare(String(b.frontmatter?.title ?? "")),
+      )
+    } else {
+      entries.sort((a, b) => (b.dates?.modified?.getTime() ?? 0) - (a.dates?.modified?.getTime() ?? 0))
+    }
+
     if (limit) entries = entries.slice(0, limit)
     if (entries.length === 0) return null
 
