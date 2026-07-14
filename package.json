@@ -114,8 +114,8 @@
       }
     },
     "components": {
-      "ExampleComponent": {
-        "displayName": "Example Component",
+      "EntryList": {
+        "displayName": "Entry List",
         "defaultPosition": "right",
         "defaultPriority": 50
       }
