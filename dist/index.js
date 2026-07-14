@@ -3751,25 +3751,35 @@ function u2(e2, t2, n2, o2, i2, u3) {
 }
 
 // src/components/EntryList.tsx
+function slugifyName(name) {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
 var EntryList_default = (() => {
   const EntryList = ({ fileData, allFiles }) => {
     const slug2 = fileData.slug;
+    if (slug2 === "bibliography") {
+      const nameSet = /* @__PURE__ */ new Set();
+      allFiles.forEach((f3) => {
+        const authors = f3.frontmatter?.authors;
+        if (Array.isArray(authors)) {
+          authors.forEach((a2) => {
+            if (a2) nameSet.add(String(a2));
+          });
+        }
+      });
+      const names = Array.from(nameSet).sort((a2, b) => a2.localeCompare(b));
+      if (names.length === 0) return null;
+      return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `/tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) }) });
+    }
     let type = null;
     let limit = void 0;
     if (slug2 === "sources") type = "source";
     else if (slug2 === "ideas") type = "idea";
     else if (slug2 === "publications") type = "publication";
-    else if (slug2 === "bibliography") type = "source";
     else if (slug2 === "index") limit = 5;
     else return null;
     let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug2 === "index" && f3.frontmatter?.type);
-    if (slug2 === "bibliography") {
-      entries.sort(
-        (a2, b) => String(a2.frontmatter?.title ?? "").localeCompare(String(b.frontmatter?.title ?? ""))
-      );
-    } else {
-      entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
-    }
+    entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
     if (limit) entries = entries.slice(0, limit);
     if (entries.length === 0) return null;
     return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
