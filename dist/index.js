@@ -3756,9 +3756,9 @@ var EntryList_default = (() => {
     const slug2 = fileData.slug;
     let type = null;
     let limit = void 0;
-    if (slug2 === "Sources") type = "source";
-    else if (slug2 === "Ideas") type = "idea";
-    else if (slug2 === "Publications") type = "publication";
+    if (slug2 === "sources") type = "source";
+    else if (slug2 === "ideas") type = "idea";
+    else if (slug2 === "publications") type = "publication";
     else if (slug2 === "index") limit = 5;
     else return null;
     let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug2 === "index" && f3.frontmatter?.type);

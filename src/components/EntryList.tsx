@@ -6,9 +6,9 @@ export default (() => {
     let type: string | null = null
     let limit: number | undefined = undefined
 
-    if (slug === "Sources") type = "source"
-    else if (slug === "Ideas") type = "idea"
-    else if (slug === "Publications") type = "publication"
+    if (slug === "sources") type = "source"
+    else if (slug === "ideas") type = "idea"
+    else if (slug === "publications") type = "publication"
     else if (slug === "index") limit = 5
     else return null
 
