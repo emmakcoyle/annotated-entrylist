@@ -72,8 +72,15 @@ export default (() => {
     else return null
 
     let entries = allFiles.filter((f) => f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type))
-    entries.sort((a, b) => (b.dates?.modified?.getTime() ?? 0) - (a.dates?.modified?.getTime() ?? 0))
-
+   entries.sort((a, b) => {
+  const aDate = a.frontmatter?.date_published
+    ? new Date(String(a.frontmatter.date_published)).getTime()
+    : (a.dates?.modified?.getTime() ?? 0)
+  const bDate = b.frontmatter?.date_published
+    ? new Date(String(b.frontmatter.date_published)).getTime()
+    : (b.dates?.modified?.getTime() ?? 0)
+  return bDate - aDate
+})
     // collect unique tags used within this section, only on the section
     // landing pages themselves (not the homepage's "recently added")
     let tagBlock = null
