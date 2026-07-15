@@ -8,6 +8,11 @@ function slugifyName(name: string): string {
     .replace(/(^-|-$)/g, "")
 }
 
+function lastName(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  return parts[parts.length - 1] ?? name
+}
+
 export default (() => {
   const EntryList: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
     const slug = fileData.slug
@@ -22,20 +27,38 @@ export default (() => {
           })
         }
       })
-      const names = Array.from(nameSet).sort((a, b) => a.localeCompare(b))
+      const names = Array.from(nameSet).sort((a, b) => lastName(a).localeCompare(lastName(b)))
       if (names.length === 0) return null
+
+      // group by first letter of last name
+      const groups: { letter: string; names: string[] }[] = []
+      names.forEach((n) => {
+        const letter = lastName(n).charAt(0).toUpperCase()
+        const lastGroup = groups[groups.length - 1]
+        if (lastGroup && lastGroup.letter === letter) {
+          lastGroup.names.push(n)
+        } else {
+          groups.push({ letter, names: [n] })
+        }
+      })
 
       return (
         <div class="entry-list-block">
-          <ul class="bib-name-list">
-            {names.map((n, i) => (
-              <li key={i}>
-                <a href={`/tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
-                  {n}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <p class="section-label">Authors, Thinkers &amp; Artists</p>
+          {groups.map((g, gi) => (
+            <div class="bib-letter-group" key={gi}>
+              <p class="bib-letter">{g.letter}</p>
+              <ul class="bib-name-list">
+                {g.names.map((n, i) => (
+                  <li key={i}>
+                    <a href={`/tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
+                      {n}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )
     }

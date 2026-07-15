@@ -3754,6 +3754,10 @@ function u2(e2, t2, n2, o2, i2, u3) {
 function slugifyName(name) {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
+function lastName(name) {
+  const parts = name.trim().split(/\s+/);
+  return parts[parts.length - 1] ?? name;
+}
 var EntryList_default = (() => {
   const EntryList = ({ fileData, allFiles }) => {
     const slug2 = fileData.slug;
@@ -3767,9 +3771,25 @@ var EntryList_default = (() => {
           });
         }
       });
-      const names = Array.from(nameSet).sort((a2, b) => a2.localeCompare(b));
+      const names = Array.from(nameSet).sort((a2, b) => lastName(a2).localeCompare(lastName(b)));
       if (names.length === 0) return null;
-      return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `/tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) }) });
+      const groups = [];
+      names.forEach((n2) => {
+        const letter = lastName(n2).charAt(0).toUpperCase();
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.letter === letter) {
+          lastGroup.names.push(n2);
+        } else {
+          groups.push({ letter, names: [n2] });
+        }
+      });
+      return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: [
+        /* @__PURE__ */ u2("p", { class: "section-label", children: "Authors, Thinkers & Artists" }),
+        groups.map((g2, gi) => /* @__PURE__ */ u2("div", { class: "bib-letter-group", children: [
+          /* @__PURE__ */ u2("p", { class: "bib-letter", children: g2.letter }),
+          /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `/tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) })
+        ] }, gi))
+      ] });
     }
     let type = null;
     let limit = void 0;
