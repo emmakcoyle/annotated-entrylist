@@ -19,6 +19,10 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" })
 }
 
+function isTemplate(f: any): boolean {
+  return typeof f.slug === "string" && f.slug.startsWith("templates/")
+}
+
 export default (() => {
   const EntryList: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
     const slug = fileData.slug
@@ -26,6 +30,7 @@ export default (() => {
     if (slug === "bibliography") {
       const nameSet = new Set<string>()
       allFiles.forEach((f) => {
+        if (isTemplate(f)) return
         const authors = f.frontmatter?.authors as string[] | undefined
         if (Array.isArray(authors)) {
           authors.forEach((a) => {
@@ -77,11 +82,12 @@ export default (() => {
     else if (slug === "index") limit = 5
     else return null
 
-    let entries = allFiles.filter((f) => f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type))
+    let entries = allFiles.filter(
+      (f) =>
+        !isTemplate(f) &&
+        (f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type)),
+    )
 
-    // sort: pinned entries (frontmatter `pinned: 1/2/3`) always float to the
-    // top, in that numeric order; everything else sorts by date_published
-    // if present, otherwise by last-modified
     entries.sort((a, b) => {
       const aPin = Number(a.frontmatter?.pinned) || 0
       const bPin = Number(b.frontmatter?.pinned) || 0
@@ -98,12 +104,11 @@ export default (() => {
       return bDate - aDate
     })
 
-    // collect unique tags used within this section, only on the section
-    // landing pages themselves (not the homepage's "recently added")
     let tagBlock = null
     if (slug === "sources" || slug === "ideas" || slug === "publications") {
       const tagSet = new Set<string>()
       allFiles.forEach((f) => {
+        if (isTemplate(f)) return
         if (f.frontmatter?.type === type) {
           const tags = f.frontmatter?.tags as string[] | undefined
           if (Array.isArray(tags)) tags.forEach((t) => t && tagSet.add(String(t)))
