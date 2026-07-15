@@ -13,6 +13,12 @@ function lastName(name: string): string {
   return parts[parts.length - 1] ?? name
 }
 
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ""
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" })
+}
+
 export default (() => {
   const EntryList: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
     const slug = fileData.slug
@@ -72,15 +78,26 @@ export default (() => {
     else return null
 
     let entries = allFiles.filter((f) => f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type))
-   entries.sort((a, b) => {
-  const aDate = a.frontmatter?.date_published
-    ? new Date(String(a.frontmatter.date_published)).getTime()
-    : (a.dates?.modified?.getTime() ?? 0)
-  const bDate = b.frontmatter?.date_published
-    ? new Date(String(b.frontmatter.date_published)).getTime()
-    : (b.dates?.modified?.getTime() ?? 0)
-  return bDate - aDate
-})
+
+    // sort: pinned entries (frontmatter `pinned: 1/2/3`) always float to the
+    // top, in that numeric order; everything else sorts by date_published
+    // if present, otherwise by last-modified
+    entries.sort((a, b) => {
+      const aPin = Number(a.frontmatter?.pinned) || 0
+      const bPin = Number(b.frontmatter?.pinned) || 0
+      if (aPin && bPin) return aPin - bPin
+      if (aPin) return -1
+      if (bPin) return 1
+
+      const aDate = a.frontmatter?.date_published
+        ? new Date(String(a.frontmatter.date_published)).getTime()
+        : (a.dates?.modified?.getTime() ?? 0)
+      const bDate = b.frontmatter?.date_published
+        ? new Date(String(b.frontmatter.date_published)).getTime()
+        : (b.dates?.modified?.getTime() ?? 0)
+      return bDate - aDate
+    })
+
     // collect unique tags used within this section, only on the section
     // landing pages themselves (not the homepage's "recently added")
     let tagBlock = null
@@ -116,17 +133,25 @@ export default (() => {
         {entries.length > 0 && (
           <>
             <p class="section-label">All entries</p>
-            {entries.map((e, i) => (
-              <div class="entry" key={i}>
-                <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
-                <div>
-                  <p class="title"><a href={`/${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
-                  <p class="dek">{String(e.frontmatter?.description ?? "")}</p>
-                  <span class="mode">{String(e.frontmatter?.mode ?? "")}</span>
+            {entries.map((e, i) => {
+              const dateStr = e.frontmatter?.date_published
+                ? formatDate(String(e.frontmatter.date_published))
+                : ""
+              return (
+                <div class="entry" key={i}>
+                  <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
+                  <div>
+                    <p class="title"><a href={`/${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
+                    <p class="dek">{String(e.frontmatter?.description ?? "")}</p>
+                    <span class="mode">{String(e.frontmatter?.mode ?? "")}</span>
+                  </div>
+                  <div class="entry-meta">
+                    <span class="kind">{String(e.frontmatter?.kind ?? "")}</span>
+                    {dateStr ? <span class="date">{dateStr}</span> : null}
+                  </div>
                 </div>
-                <span class="kind">{String(e.frontmatter?.kind ?? "")}</span>
-              </div>
-            ))}
+              )
+            })}
           </>
         )}
       </div>

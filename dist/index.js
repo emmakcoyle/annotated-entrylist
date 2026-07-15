@@ -3761,6 +3761,11 @@ function lastName(name) {
   const parts = name.trim().split(/\s+/);
   return parts[parts.length - 1] ?? name;
 }
+function formatDate(dateStr) {
+  const d2 = new Date(dateStr);
+  if (isNaN(d2.getTime())) return "";
+  return d2.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
 var EntryList_default = (() => {
   const EntryList = ({ fileData, allFiles }) => {
     const slug2 = fileData.slug;
@@ -3802,7 +3807,16 @@ var EntryList_default = (() => {
     else if (slug2 === "index") limit = 5;
     else return null;
     let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug2 === "index" && f3.frontmatter?.type);
-    entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
+    entries.sort((a2, b) => {
+      const aPin = Number(a2.frontmatter?.pinned) || 0;
+      const bPin = Number(b.frontmatter?.pinned) || 0;
+      if (aPin && bPin) return aPin - bPin;
+      if (aPin) return -1;
+      if (bPin) return 1;
+      const aDate = a2.frontmatter?.date_published ? new Date(String(a2.frontmatter.date_published)).getTime() : a2.dates?.modified?.getTime() ?? 0;
+      const bDate = b.frontmatter?.date_published ? new Date(String(b.frontmatter.date_published)).getTime() : b.dates?.modified?.getTime() ?? 0;
+      return bDate - aDate;
+    });
     let tagBlock = null;
     if (slug2 === "sources" || slug2 === "ideas" || slug2 === "publications") {
       const tagSet = /* @__PURE__ */ new Set();
@@ -3826,15 +3840,21 @@ var EntryList_default = (() => {
       tagBlock,
       entries.length > 0 && /* @__PURE__ */ u2(k, { children: [
         /* @__PURE__ */ u2("p", { class: "section-label", children: "All entries" }),
-        entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
-          /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
-          /* @__PURE__ */ u2("div", { children: [
-            /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
-            /* @__PURE__ */ u2("p", { class: "dek", children: String(e2.frontmatter?.description ?? "") }),
-            /* @__PURE__ */ u2("span", { class: "mode", children: String(e2.frontmatter?.mode ?? "") })
-          ] }),
-          /* @__PURE__ */ u2("span", { class: "kind", children: String(e2.frontmatter?.kind ?? "") })
-        ] }, i2))
+        entries.map((e2, i2) => {
+          const dateStr = e2.frontmatter?.date_published ? formatDate(String(e2.frontmatter.date_published)) : "";
+          return /* @__PURE__ */ u2("div", { class: "entry", children: [
+            /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
+            /* @__PURE__ */ u2("div", { children: [
+              /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
+              /* @__PURE__ */ u2("p", { class: "dek", children: String(e2.frontmatter?.description ?? "") }),
+              /* @__PURE__ */ u2("span", { class: "mode", children: String(e2.frontmatter?.mode ?? "") })
+            ] }),
+            /* @__PURE__ */ u2("div", { class: "entry-meta", children: [
+              /* @__PURE__ */ u2("span", { class: "kind", children: String(e2.frontmatter?.kind ?? "") }),
+              dateStr ? /* @__PURE__ */ u2("span", { class: "date", children: dateStr }) : null
+            ] })
+          ] }, i2);
+        })
       ] })
     ] });
   };
