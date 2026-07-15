@@ -3730,6 +3730,9 @@ var ExampleEmitter = (userOptions) => {
   };
 };
 var l;
+function k(n2) {
+  return n2.children;
+}
 l = { __e: function(n2, l2, u3, t2) {
   for (var i2, o2, r2; l2 = l2.__; ) if ((i2 = l2.__c) && !i2.__) try {
     if ((o2 = i2.constructor) && null != o2.getDerivedStateFromError && (i2.setState(o2.getDerivedStateFromError(n2)), r2 = i2.__d), null != i2.componentDidCatch && (i2.componentDidCatch(n2, t2 || {}), r2 = i2.__d), r2) return i2.__E = i2;
@@ -3800,17 +3803,40 @@ var EntryList_default = (() => {
     else return null;
     let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug2 === "index" && f3.frontmatter?.type);
     entries.sort((a2, b) => (b.dates?.modified?.getTime() ?? 0) - (a2.dates?.modified?.getTime() ?? 0));
+    let tagBlock = null;
+    if (slug2 === "sources" || slug2 === "ideas" || slug2 === "publications") {
+      const tagSet = /* @__PURE__ */ new Set();
+      allFiles.forEach((f3) => {
+        if (f3.frontmatter?.type === type) {
+          const tags2 = f3.frontmatter?.tags;
+          if (Array.isArray(tags2)) tags2.forEach((t2) => t2 && tagSet.add(String(t2)));
+        }
+      });
+      const tags = Array.from(tagSet).sort((a2, b) => a2.localeCompare(b));
+      if (tags.length > 0) {
+        tagBlock = /* @__PURE__ */ u2("div", { class: "tag-browse", children: [
+          /* @__PURE__ */ u2("p", { class: "section-label", children: "Browse by tag" }),
+          /* @__PURE__ */ u2("div", { class: "tag-browse-list", children: tags.map((t2, i2) => /* @__PURE__ */ u2("a", { href: `/tags/${t2}`, class: "tag-pill", children: t2 }, i2)) })
+        ] });
+      }
+    }
     if (limit) entries = entries.slice(0, limit);
-    if (entries.length === 0) return null;
-    return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
-      /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
-      /* @__PURE__ */ u2("div", { children: [
-        /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
-        /* @__PURE__ */ u2("p", { class: "dek", children: String(e2.frontmatter?.description ?? "") }),
-        /* @__PURE__ */ u2("span", { class: "mode", children: String(e2.frontmatter?.mode ?? "") })
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "kind", children: String(e2.frontmatter?.kind ?? "") })
-    ] }, i2)) });
+    if (entries.length === 0 && !tagBlock) return null;
+    return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: [
+      tagBlock,
+      entries.length > 0 && /* @__PURE__ */ u2(k, { children: [
+        /* @__PURE__ */ u2("p", { class: "section-label", children: "All entries" }),
+        entries.map((e2, i2) => /* @__PURE__ */ u2("div", { class: "entry", children: [
+          /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
+          /* @__PURE__ */ u2("div", { children: [
+            /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
+            /* @__PURE__ */ u2("p", { class: "dek", children: String(e2.frontmatter?.description ?? "") }),
+            /* @__PURE__ */ u2("span", { class: "mode", children: String(e2.frontmatter?.mode ?? "") })
+          ] }),
+          /* @__PURE__ */ u2("span", { class: "kind", children: String(e2.frontmatter?.kind ?? "") })
+        ] }, i2))
+      ] })
+    ] });
   };
   return EntryList;
 });

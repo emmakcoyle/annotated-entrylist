@@ -30,7 +30,6 @@ export default (() => {
       const names = Array.from(nameSet).sort((a, b) => lastName(a).localeCompare(lastName(b)))
       if (names.length === 0) return null
 
-      // group by first letter of last name
       const groups: { letter: string; names: string[] }[] = []
       names.forEach((n) => {
         const letter = lastName(n).charAt(0).toUpperCase()
@@ -74,22 +73,55 @@ export default (() => {
 
     let entries = allFiles.filter((f) => f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type))
     entries.sort((a, b) => (b.dates?.modified?.getTime() ?? 0) - (a.dates?.modified?.getTime() ?? 0))
+
+    // collect unique tags used within this section, only on the section
+    // landing pages themselves (not the homepage's "recently added")
+    let tagBlock = null
+    if (slug === "sources" || slug === "ideas" || slug === "publications") {
+      const tagSet = new Set<string>()
+      allFiles.forEach((f) => {
+        if (f.frontmatter?.type === type) {
+          const tags = f.frontmatter?.tags as string[] | undefined
+          if (Array.isArray(tags)) tags.forEach((t) => t && tagSet.add(String(t)))
+        }
+      })
+      const tags = Array.from(tagSet).sort((a, b) => a.localeCompare(b))
+      if (tags.length > 0) {
+        tagBlock = (
+          <div class="tag-browse">
+            <p class="section-label">Browse by tag</p>
+            <div class="tag-browse-list">
+              {tags.map((t, i) => (
+                <a key={i} href={`/tags/${t}`} class="tag-pill">{t}</a>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    }
+
     if (limit) entries = entries.slice(0, limit)
-    if (entries.length === 0) return null
+    if (entries.length === 0 && !tagBlock) return null
 
     return (
       <div class="entry-list-block">
-        {entries.map((e, i) => (
-          <div class="entry" key={i}>
-            <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
-            <div>
-              <p class="title"><a href={`/${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
-              <p class="dek">{String(e.frontmatter?.description ?? "")}</p>
-              <span class="mode">{String(e.frontmatter?.mode ?? "")}</span>
-            </div>
-            <span class="kind">{String(e.frontmatter?.kind ?? "")}</span>
-          </div>
-        ))}
+        {tagBlock}
+        {entries.length > 0 && (
+          <>
+            <p class="section-label">All entries</p>
+            {entries.map((e, i) => (
+              <div class="entry" key={i}>
+                <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
+                <div>
+                  <p class="title"><a href={`/${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
+                  <p class="dek">{String(e.frontmatter?.description ?? "")}</p>
+                  <span class="mode">{String(e.frontmatter?.mode ?? "")}</span>
+                </div>
+                <span class="kind">{String(e.frontmatter?.kind ?? "")}</span>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     )
   }
