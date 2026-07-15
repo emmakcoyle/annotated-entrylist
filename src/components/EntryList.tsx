@@ -1,3 +1,4 @@
+// EntryList.tsx
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "@quartz-community/types"
 
 function slugifyName(name: string): string {
@@ -61,7 +62,7 @@ export default (() => {
               <ul class="bib-name-list">
                 {g.names.map((n, i) => (
                   <li key={i}>
-                    <a href={`/tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
+                    <a href={`./tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
                       {n}
                     </a>
                   </li>
@@ -121,7 +122,7 @@ export default (() => {
             <p class="section-label">Browse by tag</p>
             <div class="tag-browse-list">
               {tags.map((t, i) => (
-                <a key={i} href={`/tags/${t}`} class="tag-pill">{t}</a>
+                <a key={i} href={`./tags/${t}`} class="tag-pill">{t}</a>
               ))}
             </div>
           </div>
@@ -146,7 +147,7 @@ export default (() => {
                 <div class="entry" key={i}>
                   <span class="num">{String(e.frontmatter?.coordinate ?? "")}</span>
                   <div>
-                    <p class="title"><a href={`/${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
+                    <p class="title"><a href={`./${e.slug}`} style="color:inherit;text-decoration:none;">{String(e.frontmatter?.title ?? "")}</a></p>
                     <p class="dek">{String(e.frontmatter?.description ?? "")}</p>
                     <span class="mode">{String(e.frontmatter?.mode ?? "")}</span>
                   </div>

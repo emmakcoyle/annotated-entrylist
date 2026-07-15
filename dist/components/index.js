@@ -38,12 +38,16 @@ function formatDate(dateStr) {
   if (isNaN(d2.getTime())) return "";
   return d2.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
+function isTemplate(f3) {
+  return typeof f3.slug === "string" && f3.slug.startsWith("templates/");
+}
 var EntryList_default = (() => {
   const EntryList = ({ fileData, allFiles }) => {
     const slug = fileData.slug;
     if (slug === "bibliography") {
       const nameSet = /* @__PURE__ */ new Set();
       allFiles.forEach((f3) => {
+        if (isTemplate(f3)) return;
         const authors = f3.frontmatter?.authors;
         if (Array.isArray(authors)) {
           authors.forEach((a2) => {
@@ -67,7 +71,7 @@ var EntryList_default = (() => {
         /* @__PURE__ */ u2("p", { class: "section-label", children: "Authors, Thinkers & Artists" }),
         groups.map((g2, gi) => /* @__PURE__ */ u2("div", { class: "bib-letter-group", children: [
           /* @__PURE__ */ u2("p", { class: "bib-letter", children: g2.letter }),
-          /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `/tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) })
+          /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `./tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) })
         ] }, gi))
       ] });
     }
@@ -78,7 +82,9 @@ var EntryList_default = (() => {
     else if (slug === "publications") type = "publication";
     else if (slug === "index") limit = 5;
     else return null;
-    let entries = allFiles.filter((f3) => f3.frontmatter?.type === type || slug === "index" && f3.frontmatter?.type);
+    let entries = allFiles.filter(
+      (f3) => !isTemplate(f3) && (f3.frontmatter?.type === type || slug === "index" && f3.frontmatter?.type)
+    );
     entries.sort((a2, b) => {
       const aPin = Number(a2.frontmatter?.pinned) || 0;
       const bPin = Number(b.frontmatter?.pinned) || 0;
@@ -93,6 +99,7 @@ var EntryList_default = (() => {
     if (slug === "sources" || slug === "ideas" || slug === "publications") {
       const tagSet = /* @__PURE__ */ new Set();
       allFiles.forEach((f3) => {
+        if (isTemplate(f3)) return;
         if (f3.frontmatter?.type === type) {
           const tags2 = f3.frontmatter?.tags;
           if (Array.isArray(tags2)) tags2.forEach((t2) => t2 && tagSet.add(String(t2)));
@@ -102,7 +109,7 @@ var EntryList_default = (() => {
       if (tags.length > 0) {
         tagBlock = /* @__PURE__ */ u2("div", { class: "tag-browse", children: [
           /* @__PURE__ */ u2("p", { class: "section-label", children: "Browse by tag" }),
-          /* @__PURE__ */ u2("div", { class: "tag-browse-list", children: tags.map((t2, i2) => /* @__PURE__ */ u2("a", { href: `/tags/${t2}`, class: "tag-pill", children: t2 }, i2)) })
+          /* @__PURE__ */ u2("div", { class: "tag-browse-list", children: tags.map((t2, i2) => /* @__PURE__ */ u2("a", { href: `./tags/${t2}`, class: "tag-pill", children: t2 }, i2)) })
         ] });
       }
     }
@@ -117,7 +124,7 @@ var EntryList_default = (() => {
           return /* @__PURE__ */ u2("div", { class: "entry", children: [
             /* @__PURE__ */ u2("span", { class: "num", children: String(e2.frontmatter?.coordinate ?? "") }),
             /* @__PURE__ */ u2("div", { children: [
-              /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `/${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
+              /* @__PURE__ */ u2("p", { class: "title", children: /* @__PURE__ */ u2("a", { href: `./${e2.slug}`, style: "color:inherit;text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }),
               /* @__PURE__ */ u2("p", { class: "dek", children: String(e2.frontmatter?.description ?? "") }),
               /* @__PURE__ */ u2("span", { class: "mode", children: String(e2.frontmatter?.mode ?? "") })
             ] }),
