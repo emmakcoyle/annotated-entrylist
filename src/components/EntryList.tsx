@@ -1,4 +1,3 @@
-// EntryList.tsx
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "@quartz-community/types"
 
 function slugifyName(name: string): string {
@@ -75,18 +74,17 @@ export default (() => {
     }
 
     let type: string | null = null
-    let limit: number | undefined = undefined
 
     if (slug === "sources") type = "source"
     else if (slug === "ideas") type = "idea"
     else if (slug === "publications") type = "publication"
-    else if (slug === "index") limit = 5
+    else if (slug === "index") type = "__any__"
     else return null
 
     let entries = allFiles.filter(
       (f) =>
         !isTemplate(f) &&
-        (f.frontmatter?.type === type || (slug === "index" && f.frontmatter?.type)),
+        (type === "__any__" ? f.frontmatter?.type : f.frontmatter?.type === type),
     )
 
     entries.sort((a, b) => {
@@ -130,7 +128,6 @@ export default (() => {
       }
     }
 
-    if (limit) entries = entries.slice(0, limit)
     if (entries.length === 0 && !tagBlock) return null
 
     return (
@@ -138,7 +135,7 @@ export default (() => {
         {tagBlock}
         {entries.length > 0 && (
           <>
-            <p class="section-label">{slug === "index" ? "Recently added" : "All entries"}</p>
+            <p class="section-label">All entries</p>
             {entries.map((e, i) => {
               const dateStr = e.frontmatter?.date_published
                 ? formatDate(String(e.frontmatter.date_published))

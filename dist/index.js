@@ -3804,14 +3804,13 @@ var EntryList_default = (() => {
       ] });
     }
     let type = null;
-    let limit = void 0;
     if (slug2 === "sources") type = "source";
     else if (slug2 === "ideas") type = "idea";
     else if (slug2 === "publications") type = "publication";
-    else if (slug2 === "index") limit = 5;
+    else if (slug2 === "index") type = "__any__";
     else return null;
     let entries = allFiles.filter(
-      (f3) => !isTemplate(f3) && (f3.frontmatter?.type === type || slug2 === "index" && f3.frontmatter?.type)
+      (f3) => !isTemplate(f3) && (type === "__any__" ? f3.frontmatter?.type : f3.frontmatter?.type === type)
     );
     entries.sort((a2, b) => {
       const aPin = Number(a2.frontmatter?.pinned) || 0;
@@ -3841,12 +3840,11 @@ var EntryList_default = (() => {
         ] });
       }
     }
-    if (limit) entries = entries.slice(0, limit);
     if (entries.length === 0 && !tagBlock) return null;
     return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: [
       tagBlock,
       entries.length > 0 && /* @__PURE__ */ u2(k, { children: [
-        /* @__PURE__ */ u2("p", { class: "section-label", children: slug2 === "index" ? "Recently added" : "All entries" }),
+        /* @__PURE__ */ u2("p", { class: "section-label", children: "All entries" }),
         entries.map((e2, i2) => {
           const dateStr = e2.frontmatter?.date_published ? formatDate(String(e2.frontmatter.date_published)) : "";
           return /* @__PURE__ */ u2("div", { class: "entry", children: [
