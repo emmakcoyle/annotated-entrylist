@@ -138,7 +138,7 @@ export default (() => {
         {tagBlock}
         {entries.length > 0 && (
           <>
-            <p class="section-label">All entries</p>
+            <p class="section-label">{slug === "index" ? "Recently added" : "All entries"}</p>
             {entries.map((e, i) => {
               const dateStr = e.frontmatter?.date_published
                 ? formatDate(String(e.frontmatter.date_published))

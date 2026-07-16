@@ -3846,7 +3846,7 @@ var EntryList_default = (() => {
     return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: [
       tagBlock,
       entries.length > 0 && /* @__PURE__ */ u2(k, { children: [
-        /* @__PURE__ */ u2("p", { class: "section-label", children: "All entries" }),
+        /* @__PURE__ */ u2("p", { class: "section-label", children: slug2 === "index" ? "Recently added" : "All entries" }),
         entries.map((e2, i2) => {
           const dateStr = e2.frontmatter?.date_published ? formatDate(String(e2.frontmatter.date_published)) : "";
           return /* @__PURE__ */ u2("div", { class: "entry", children: [
