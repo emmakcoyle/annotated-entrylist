@@ -3773,6 +3773,9 @@ function formatDate(dateStr) {
 function isTemplate(f3) {
   return typeof f3.slug === "string" && f3.slug.startsWith("templates/");
 }
+function normType(t2) {
+  return String(t2 ?? "").trim().toLowerCase();
+}
 var EntryList_default = (() => {
   const EntryList = ({ fileData, allFiles }) => {
     const slug2 = fileData.slug;
@@ -3845,7 +3848,7 @@ var EntryList_default = (() => {
     else if (slug2 === "index") type = "__any__";
     else return null;
     let entries = allFiles.filter(
-      (f3) => !isTemplate(f3) && (type === "__any__" ? f3.frontmatter?.type : f3.frontmatter?.type === type)
+      (f3) => !isTemplate(f3) && (type === "__any__" ? Boolean(f3.frontmatter?.type) : normType(f3.frontmatter?.type) === type)
     );
     entries.sort((a2, b) => {
       const aPin = Number(a2.frontmatter?.pinned) || 0;
@@ -3862,7 +3865,7 @@ var EntryList_default = (() => {
       const tagSet = /* @__PURE__ */ new Set();
       allFiles.forEach((f3) => {
         if (isTemplate(f3)) return;
-        if (f3.frontmatter?.type === type) {
+        if (normType(f3.frontmatter?.type) === type) {
           const tags2 = f3.frontmatter?.tags;
           if (Array.isArray(tags2)) tags2.forEach((t2) => t2 && tagSet.add(String(t2)));
         }

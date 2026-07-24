@@ -28,6 +28,10 @@ function isTemplate(f: any): boolean {
   return typeof f.slug === "string" && f.slug.startsWith("templates/")
 }
 
+function normType(t: unknown): string {
+  return String(t ?? "").trim().toLowerCase()
+}
+
 export default (() => {
   const EntryList: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
     const slug = fileData.slug
@@ -148,7 +152,7 @@ export default (() => {
     let entries = allFiles.filter(
       (f) =>
         !isTemplate(f) &&
-        (type === "__any__" ? f.frontmatter?.type : f.frontmatter?.type === type),
+        (type === "__any__" ? Boolean(f.frontmatter?.type) : normType(f.frontmatter?.type) === type),
     )
 
     entries.sort((a, b) => {
@@ -172,7 +176,7 @@ export default (() => {
       const tagSet = new Set<string>()
       allFiles.forEach((f) => {
         if (isTemplate(f)) return
-        if (f.frontmatter?.type === type) {
+        if (normType(f.frontmatter?.type) === type) {
           const tags = f.frontmatter?.tags as string[] | undefined
           if (Array.isArray(tags)) tags.forEach((t) => t && tagSet.add(String(t)))
         }
