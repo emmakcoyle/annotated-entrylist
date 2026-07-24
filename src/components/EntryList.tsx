@@ -13,6 +13,11 @@ function lastName(name: string): string {
   return parts[parts.length - 1] ?? name
 }
 
+function firstLetter(title: string): string {
+  const c = title.trim().charAt(0).toUpperCase()
+  return /[A-Z0-9]/.test(c) ? c : "#"
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return ""
@@ -28,6 +33,7 @@ export default (() => {
     const slug = fileData.slug
 
     if (slug === "bibliography") {
+      // --- Authors, Thinkers & Artists (existing) ---
       const nameSet = new Set<string>()
       allFiles.forEach((f) => {
         if (isTemplate(f)) return
@@ -39,36 +45,94 @@ export default (() => {
         }
       })
       const names = Array.from(nameSet).sort((a, b) => lastName(a).localeCompare(lastName(b)))
-      if (names.length === 0) return null
 
-      const groups: { letter: string; names: string[] }[] = []
+      const authorGroups: { letter: string; names: string[] }[] = []
       names.forEach((n) => {
         const letter = lastName(n).charAt(0).toUpperCase()
-        const lastGroup = groups[groups.length - 1]
+        const lastGroup = authorGroups[authorGroups.length - 1]
         if (lastGroup && lastGroup.letter === letter) {
           lastGroup.names.push(n)
         } else {
-          groups.push({ letter, names: [n] })
+          authorGroups.push({ letter, names: [n] })
         }
       })
 
+      // --- All notes, by title only (new) ---
+      const noteFiles = allFiles.filter((f) => !isTemplate(f) && Boolean(f.frontmatter?.type))
+      const sortedTitles = [...noteFiles].sort((a, b) =>
+        String(a.frontmatter?.title ?? "").localeCompare(String(b.frontmatter?.title ?? "")),
+      )
+      const titleGroups: { letter: string; entries: typeof sortedTitles }[] = []
+      sortedTitles.forEach((e) => {
+        const letter = firstLetter(String(e.frontmatter?.title ?? ""))
+        const last = titleGroups[titleGroups.length - 1]
+        if (last && last.letter === letter) last.entries.push(e)
+        else titleGroups.push({ letter, entries: [e] })
+      })
+
+      // --- Every tag used site-wide (new) ---
+      const allTagSet = new Set<string>()
+      allFiles.forEach((f) => {
+        if (isTemplate(f)) return
+        const tags = f.frontmatter?.tags as string[] | undefined
+        if (Array.isArray(tags)) tags.forEach((t) => t && allTagSet.add(String(t)))
+      })
+      const allTags = Array.from(allTagSet).sort((a, b) => a.localeCompare(b))
+
+      if (authorGroups.length === 0 && titleGroups.length === 0 && allTags.length === 0) return null
+
       return (
         <div class="entry-list-block">
-          <p class="section-label">Authors, Thinkers &amp; Artists</p>
-          {groups.map((g, gi) => (
-            <div class="bib-letter-group" key={gi}>
-              <p class="bib-letter">{g.letter}</p>
-              <ul class="bib-name-list">
-                {g.names.map((n, i) => (
-                  <li key={i}>
-                    <a href={`./tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
-                      {n}
-                    </a>
-                  </li>
+          {authorGroups.length > 0 && (
+            <>
+              <p class="section-label">Authors, Thinkers &amp; Artists</p>
+              {authorGroups.map((g, gi) => (
+                <div class="bib-letter-group" key={gi}>
+                  <p class="bib-letter">{g.letter}</p>
+                  <ul class="bib-name-list">
+                    {g.names.map((n, i) => (
+                      <li key={i}>
+                        <a href={`./tags/${slugifyName(n)}`} style="color:inherit; text-decoration:none;">
+                          {n}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </>
+          )}
+
+          {titleGroups.length > 0 && (
+            <>
+              <p class="section-label" style="margin-top:2.4rem;">All Notes by Title</p>
+              {titleGroups.map((g, gi) => (
+                <div class="bib-letter-group" key={gi}>
+                  <p class="bib-letter">{g.letter}</p>
+                  <ul class="bib-name-list">
+                    {g.entries.map((e, i) => (
+                      <li key={i}>
+                        <a href={`./${e.slug}`} style="color:inherit; text-decoration:none;">
+                          {String(e.frontmatter?.title ?? "")}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </>
+          )}
+
+          {allTags.length > 0 && (
+            <div class="tag-browse" style="margin-top:2.4rem;">
+              <p class="section-label">All Topics</p>
+              <div class="tag-browse-list">
+                {allTags.map((t, i) => (
+                  <a key={i} href={`./tags/${t}`} class="tag-pill">{t}</a>
                 ))}
-              </ul>
+              </div>
             </div>
-          ))}
+          )}
         </div>
       )
     }

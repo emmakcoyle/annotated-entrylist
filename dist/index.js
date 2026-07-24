@@ -3761,6 +3761,10 @@ function lastName(name) {
   const parts = name.trim().split(/\s+/);
   return parts[parts.length - 1] ?? name;
 }
+function firstLetter(title) {
+  const c2 = title.trim().charAt(0).toUpperCase();
+  return /[A-Z0-9]/.test(c2) ? c2 : "#";
+}
 function formatDate(dateStr) {
   const d2 = new Date(dateStr);
   if (isNaN(d2.getTime())) return "";
@@ -3784,23 +3788,54 @@ var EntryList_default = (() => {
         }
       });
       const names = Array.from(nameSet).sort((a2, b) => lastName(a2).localeCompare(lastName(b)));
-      if (names.length === 0) return null;
-      const groups = [];
+      const authorGroups = [];
       names.forEach((n2) => {
         const letter = lastName(n2).charAt(0).toUpperCase();
-        const lastGroup = groups[groups.length - 1];
+        const lastGroup = authorGroups[authorGroups.length - 1];
         if (lastGroup && lastGroup.letter === letter) {
           lastGroup.names.push(n2);
         } else {
-          groups.push({ letter, names: [n2] });
+          authorGroups.push({ letter, names: [n2] });
         }
       });
+      const noteFiles = allFiles.filter((f3) => !isTemplate(f3) && Boolean(f3.frontmatter?.type));
+      const sortedTitles = [...noteFiles].sort(
+        (a2, b) => String(a2.frontmatter?.title ?? "").localeCompare(String(b.frontmatter?.title ?? ""))
+      );
+      const titleGroups = [];
+      sortedTitles.forEach((e2) => {
+        const letter = firstLetter(String(e2.frontmatter?.title ?? ""));
+        const last = titleGroups[titleGroups.length - 1];
+        if (last && last.letter === letter) last.entries.push(e2);
+        else titleGroups.push({ letter, entries: [e2] });
+      });
+      const allTagSet = /* @__PURE__ */ new Set();
+      allFiles.forEach((f3) => {
+        if (isTemplate(f3)) return;
+        const tags = f3.frontmatter?.tags;
+        if (Array.isArray(tags)) tags.forEach((t2) => t2 && allTagSet.add(String(t2)));
+      });
+      const allTags = Array.from(allTagSet).sort((a2, b) => a2.localeCompare(b));
+      if (authorGroups.length === 0 && titleGroups.length === 0 && allTags.length === 0) return null;
       return /* @__PURE__ */ u2("div", { class: "entry-list-block", children: [
-        /* @__PURE__ */ u2("p", { class: "section-label", children: "Authors, Thinkers & Artists" }),
-        groups.map((g2, gi) => /* @__PURE__ */ u2("div", { class: "bib-letter-group", children: [
-          /* @__PURE__ */ u2("p", { class: "bib-letter", children: g2.letter }),
-          /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `./tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) })
-        ] }, gi))
+        authorGroups.length > 0 && /* @__PURE__ */ u2(k, { children: [
+          /* @__PURE__ */ u2("p", { class: "section-label", children: "Authors, Thinkers & Artists" }),
+          authorGroups.map((g2, gi) => /* @__PURE__ */ u2("div", { class: "bib-letter-group", children: [
+            /* @__PURE__ */ u2("p", { class: "bib-letter", children: g2.letter }),
+            /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.names.map((n2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `./tags/${slugifyName(n2)}`, style: "color:inherit; text-decoration:none;", children: n2 }) }, i2)) })
+          ] }, gi))
+        ] }),
+        titleGroups.length > 0 && /* @__PURE__ */ u2(k, { children: [
+          /* @__PURE__ */ u2("p", { class: "section-label", style: "margin-top:2.4rem;", children: "All Notes by Title" }),
+          titleGroups.map((g2, gi) => /* @__PURE__ */ u2("div", { class: "bib-letter-group", children: [
+            /* @__PURE__ */ u2("p", { class: "bib-letter", children: g2.letter }),
+            /* @__PURE__ */ u2("ul", { class: "bib-name-list", children: g2.entries.map((e2, i2) => /* @__PURE__ */ u2("li", { children: /* @__PURE__ */ u2("a", { href: `./${e2.slug}`, style: "color:inherit; text-decoration:none;", children: String(e2.frontmatter?.title ?? "") }) }, i2)) })
+          ] }, gi))
+        ] }),
+        allTags.length > 0 && /* @__PURE__ */ u2("div", { class: "tag-browse", style: "margin-top:2.4rem;", children: [
+          /* @__PURE__ */ u2("p", { class: "section-label", children: "All Topics" }),
+          /* @__PURE__ */ u2("div", { class: "tag-browse-list", children: allTags.map((t2, i2) => /* @__PURE__ */ u2("a", { href: `./tags/${t2}`, class: "tag-pill", children: t2 }, i2)) })
+        ] })
       ] });
     }
     let type = null;
